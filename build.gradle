@@ -37,7 +37,7 @@ task printClasspath {
 }
 
 archivesBaseName = "chaincode"
-mainClassName="meixin.CouponCC"
+mainClassName="meixin.cc.CouponCC"
 
 run {
     if (project.hasProperty("appArgs")) {

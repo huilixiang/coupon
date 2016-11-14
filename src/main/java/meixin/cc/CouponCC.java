@@ -150,13 +150,13 @@ public class CouponCC extends ChaincodeBase {
      * 根据用户id查询用户拥有的优惠券集合
      *
      */
-    private String queryCouponsByUID(ChaincodeStub stub, String uid, boolean ) {
+    private String queryCouponsByUID(ChaincodeStub stub, String uid) {
         return "queryCouponsByUID..."; 
     
     }
 
     public String delete(ChaincodeStub stub, String function, String[] args) {
-        return "delete....."
+        return "delete.....";
     }
 	@Override
 	public String getChaincodeID() {

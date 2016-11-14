@@ -41,7 +41,7 @@ limitations under the License.
       <manifest>
       <addClasspath>true</addClasspath>
       <classpathPrefix>libs/</classpathPrefix>
-      <mainClass>meixin.CouponCC</mainClass>
+      <mainClass>meixin.cc.CouponCC</mainClass>
       </manifest>
       </archive>
     </configuration>
