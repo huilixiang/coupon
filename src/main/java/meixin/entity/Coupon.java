@@ -9,7 +9,7 @@ public class Coupon {
     //优惠券序列号
     private String serialNo;
     //优惠券发放类型 1：领取 2：发放
-    private int type;
+    private CouponActionType  type;
     //创建时间，毫秒
     private long createDate;
     //创建人
@@ -17,7 +17,17 @@ public class Coupon {
     //拥有者
     private String owner;
     //优惠券状态, 0: 未生效， 1：未消费  2：已消费 3：已失效
-    private int status;
+    private CouponStatus status;
+
+    private int denomination;
+
+    public int getDenomination() {
+        return denomination;
+    }
+
+    public void setDenomination(int denomination) {
+        this.denomination = denomination;
+    }
 
     public String getBatchSerialNo() {
         return batchSerialNo;
@@ -35,13 +45,6 @@ public class Coupon {
         this.serialNo = serialNo;
     }
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
 
     public long getCreateDate() {
         return createDate;
@@ -67,11 +70,19 @@ public class Coupon {
         this.owner = owner;
     }
 
-    public int getStatus() {
+    public CouponActionType getType() {
+        return type;
+    }
+
+    public void setType(CouponActionType type) {
+        this.type = type;
+    }
+
+    public CouponStatus getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(CouponStatus status) {
         this.status = status;
     }
 

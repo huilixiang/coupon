@@ -10,15 +10,16 @@ import java.io.IOException;
 public class CouponUtils {
 
 
-    public static CouponBatch parse(String json) {
-        CouponBatch cb = new Gson().fromJson(json, CouponBatch.class);
+    public static <T> T parse(String json, Class<T> clazz) {
+        T cb = new Gson().fromJson(json, clazz);
         return cb;
     }
 
-    public static String encode2Json(CouponBatch cb) {
+    public static <T> String encode2Json(T cb) {
         Gson gson = new Gson();
         String json = gson.toJson(cb);
         return json;
     }
+
 
 }
