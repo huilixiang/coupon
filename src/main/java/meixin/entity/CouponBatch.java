@@ -62,6 +62,7 @@ public class CouponBatch {
     //批次创建时间
     private long createDate = 0L;
 
+    private boolean isDisabled = false;
 
     public String getSerialNo() {
         return serialNo;
@@ -213,5 +214,13 @@ public class CouponBatch {
     @Override
     public int hashCode() {
         return serialNo.hashCode();
+    }
+
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        isDisabled = disabled;
     }
 }
