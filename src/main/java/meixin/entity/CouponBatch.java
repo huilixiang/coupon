@@ -1,11 +1,11 @@
 package meixin.entity;
 
-import java.util.Date;
-
 /**
  * 优惠券批次实体类
  */
 public class CouponBatch {
+
+    private long id;
     //优惠券批次号
     private String serialNo;
     //优惠券名称
@@ -15,30 +15,14 @@ public class CouponBatch {
     //面额，单位：分
     private int denomination;
     //生效时间对应的毫秒数
-    private long effectiveDate;
+    private long effectiveTime;
     //失效时间对应的毫秒数
-    private long expiringDate;
+    private long expiringTime;
     //可以申请的开始时间对应的毫秒数
-    private long applyStartDate = 0L;
+    private long applyStartTime = 0L;
     //可以申请的截止时间
-    private long applyEndDate = 0L;
-
-    public int getAppliedAmount() {
-        return appliedAmount;
-    }
-
-    public void setAppliedAmount(int appliedAmount) {
-        this.appliedAmount = appliedAmount;
-    }
-
-    public int getSentAmount() {
-        return sentAmount;
-    }
-
-    public void setSentAmount(int sentAmount) {
-        this.sentAmount = sentAmount;
-    }
-
+    private long applyEndTime = 0L;
+    private long publishTime = 0L;
     //预算时间
     private String budgetNo;
     //发放渠道
@@ -60,9 +44,13 @@ public class CouponBatch {
     //创建人
     private String creator;
     //批次创建时间
-    private long createDate = 0L;
+    private long createTime = 0L;
 
     private boolean isDisabled = false;
+
+    private long shopID;
+
+    private String picture;
 
     public String getSerialNo() {
         return serialNo;
@@ -96,36 +84,36 @@ public class CouponBatch {
         this.denomination = denomination;
     }
 
-    public long getEffectiveDate() {
-        return effectiveDate;
+    public long getEffectiveTime() {
+        return effectiveTime;
     }
 
-    public void setEffectiveDate(long effectiveDate) {
-        this.effectiveDate = effectiveDate;
+    public void setEffectiveTime(long effectiveTime) {
+        this.effectiveTime = effectiveTime;
     }
 
-    public long getExpiringDate() {
-        return expiringDate;
+    public long getExpiringTime() {
+        return expiringTime;
     }
 
-    public void setExpiringDate(long expiringDate) {
-        this.expiringDate = expiringDate;
+    public void setExpiringTime(long expiringTime) {
+        this.expiringTime = expiringTime;
     }
 
-    public long getApplyStartDate() {
-        return applyStartDate;
+    public long getApplyStartTime() {
+        return applyStartTime;
     }
 
-    public void setApplyStartDate(long applyStartDate) {
-        this.applyStartDate = applyStartDate;
+    public void setApplyStartTime(long applyStartTime) {
+        this.applyStartTime = applyStartTime;
     }
 
-    public long getApplyEndDate() {
-        return applyEndDate;
+    public long getApplyEndTime() {
+        return applyEndTime;
     }
 
-    public void setApplyEndDate(long applyEndDate) {
-        this.applyEndDate = applyEndDate;
+    public void setApplyEndTime(long applyEndTime) {
+        this.applyEndTime = applyEndTime;
     }
 
     public String getBudgetNo() {
@@ -192,14 +180,46 @@ public class CouponBatch {
         this.creator = creator;
     }
 
-    public long getCreateDate() {
-        return createDate;
+    public long getCreateTime() {
+        return createTime;
     }
 
-    public void setCreateDate(long createDate) {
-        this.createDate = createDate;
+    public void setCreateTime(long createTime) {
+        this.createTime = createTime;
     }
 
+
+    public int getAppliedAmount() {
+        return appliedAmount;
+    }
+
+    public void setAppliedAmount(int appliedAmount) {
+        this.appliedAmount = appliedAmount;
+    }
+
+    public int getSentAmount() {
+        return sentAmount;
+    }
+
+    public void setSentAmount(int sentAmount) {
+        this.sentAmount = sentAmount;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getPublishTime() {
+        return publishTime;
+    }
+
+    public void setPublishTime(long publishTime) {
+        this.publishTime = publishTime;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -209,6 +229,22 @@ public class CouponBatch {
 
         return serialNo.equals(that.serialNo);
 
+    }
+
+    public long getShopID() {
+        return shopID;
+    }
+
+    public void setShopID(long shopID) {
+        this.shopID = shopID;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
     @Override

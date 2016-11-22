@@ -4,6 +4,8 @@ package meixin.entity;
  * Created by huajie on 2016/11/14.
  */
 public class Coupon {
+
+    private long id;
     //优惠券批次号
     private String batchSerialNo;
     //优惠券序列号
@@ -15,7 +17,7 @@ public class Coupon {
     //创建人
     private String creator;
     //拥有者
-    private String owner;
+    private long owner;
     //优惠券状态, 0: 未生效， 1：未消费  2：已消费 3：已失效
     private CouponStatus status;
 
@@ -62,11 +64,11 @@ public class Coupon {
         this.creator = creator;
     }
 
-    public String getOwner() {
+    public long getOwner() {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public void setOwner(long owner) {
         this.owner = owner;
     }
 
@@ -84,6 +86,14 @@ public class Coupon {
 
     public void setStatus(CouponStatus status) {
         this.status = status;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     @Override
