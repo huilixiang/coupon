@@ -3,6 +3,8 @@ Copyright meixin 2016 All Rights Reserved.
 */
 package meixin.cc;
 
+import meixin.dto.CouponBatchDto;
+import meixin.dto.CouponInfoDto;
 import meixin.entity.Coupon;
 import meixin.entity.CouponActionType;
 import meixin.entity.CouponBatch;
@@ -21,7 +23,7 @@ import java.util.List;
  *优惠券业务chaincode
  */
 public class CouponCC extends ChaincodeBase {
-    
+
     private static Log log = LogFactory.getLog(CouponCC.class);
     private static boolean isDebug = log.isDebugEnabled();
     //创建者-->优惠券批次 key-value key后缀
@@ -92,6 +94,12 @@ public class CouponCC extends ChaincodeBase {
                     log.debug("disableCouponBatch response:"+re);
                 }
                 return re;
+            case "publishCouponBatch":
+                re = publishCouponBatch(stub, args);
+                if (isDebug) {
+                    log.debug("publishCouponBatch response:"+re);
+                }
+                return re;
             default:
                 return "not supported";
         }
@@ -115,11 +123,8 @@ public class CouponCC extends ChaincodeBase {
                 re = queryCouponBatchByID(stub, args);
                 return re;
             case "queryCouponByID":
-
                 return "queryCouponByID";
-
             case "queryCouponsByUID":
-
                 return re;
             default:
                 return "not supported";
@@ -140,7 +145,15 @@ public class CouponCC extends ChaincodeBase {
      * 根据优惠券批次号查询批次信息
      */
     private String queryCouponBatchByID(ChaincodeStub stub, String[] args) {
-        return "queryCouponBatchByNo...";
+        if (args.length != 1) {
+            return "{\"Error\":\"Incorrect number of arguments. Expecting couponBatchSN to query\"}";
+        }
+        CouponBatch cb = getCouponBatchByNo(stub, args[0]);
+        if (cb == null) {
+            return "{\"Error\":\"couponBatch not existed \"}";
+        }
+        CouponBatchDto dto = CouponUtils.couponBatchEntity2DTO(cb);
+        return CouponUtils.encode2Json(dto);
     }
 
     /**
@@ -156,6 +169,21 @@ public class CouponCC extends ChaincodeBase {
     private String queryCouponsByUID(ChaincodeStub stub, String[] args) {
         return "queryCouponsByUID...";
 
+    }
+
+    private String publishCouponBatch(ChaincodeStub stub, String[] args) {
+        if (args.length != 2) {
+            return "{\"Error\":\"Incorrect number of arguments. Expecting [operator, couponBatchNo] to applyCoupon\"}";
+        }
+        String operator = args[0];
+        String couponBatchSerialNo = args[1];
+        CouponBatch cb = getCouponBatchByNo(stub, couponBatchSerialNo);
+        if (cb == null) {
+            return "{\"Error\":\"CouponBatch does not exist. }";
+        }
+        cb.setPublishTime(System.currentTimeMillis());
+        saveCouponBatch(stub, cb);
+        return "success";
     }
 
     private String disableCouponBatch(ChaincodeStub stub, String[] args) {
@@ -177,23 +205,28 @@ public class CouponCC extends ChaincodeBase {
      * 创建优惠券批次
      */
     private String createCouponBatch(ChaincodeStub stub, String[] args) {
+        log.info(".......createCouponBatch function.......");
         if(args == null || args.length != 1) {
             return "args cannot be empty";
         }
         CouponBatch cb = null;
         try {
-            cb = CouponUtils.parse(args[0], CouponBatch.class);
+            CouponBatchDto dto = CouponUtils.parse(args[0], CouponBatchDto.class);
+            cb = CouponUtils.couponBatchDTO2Entity(dto);
         } catch (Exception e) {
-            log.error("failed for parsing request json of createCouponBatch ");
+            log.error("....failed for parsing request json of createCouponBatch.....");
             return "request json error";
         }
         if (!checkBudget(cb.getBudgetNo())) {
+            log.warn(".......checkBudget returned false......");
             return "budgetNo is noneffective";
         }
         generateBatchNo(cb);
+        log.info("saveCouponBatch..............");
         saveCouponBatch(stub, cb);
         //TODO..现在并未记录优惠券批次创建者--》优惠券批次的key-value， 可以由辅助系统来实现查询
-        return "success";
+        log.info("create coupon batch success:"+cb.getSerialNo());
+        return cb.getSerialNo();
 
     }
 
@@ -204,7 +237,7 @@ public class CouponCC extends ChaincodeBase {
         if (args == null || args.length != 2) {
             return "{\"Error\":\"Incorrect number of arguments. Expecting [uid, couponBatchNo] to applyCoupon\"}";
         }
-        String uid = args[0];
+        long uid = Long.valueOf(args[0]);
         String couponBatchNo = args[1];
         CouponBatch cb = getCouponBatchByNo(stub, couponBatchNo);
         if (!checkEffectivity4Apply(cb)) {
@@ -229,7 +262,7 @@ public class CouponCC extends ChaincodeBase {
         String operatorID = args[0];
         String couponBatchNo = args[1];
         int denomination = Integer.valueOf(args[2]);
-        String receiver = args[3];
+        long receiver = Long.valueOf(args[3]);
         CouponBatch cb = getCouponBatchByNo(stub, couponBatchNo);
         //有效性验证
         if (cb == null || !checkEffectivity4Send(cb)) {
@@ -252,7 +285,7 @@ public class CouponCC extends ChaincodeBase {
             return "{\"Error\":\"Incorrect number of arguments. " +
                     "Expecting [uid, couponid, orderid, price, sku] to consumeCoupon\"}";
         }
-        String uid = args[0];
+        long uid = Long.valueOf(args[0]);
         String couponId = args[1];
         String orderId = args[2];
         int price = Float.valueOf(args[3]).intValue();
@@ -266,7 +299,7 @@ public class CouponCC extends ChaincodeBase {
         if (cb == null) {
             return "{\"Error\":\"illegal couponbatchid.\"}";
         }
-        if (System.currentTimeMillis() > cb.getExpiringDate()) {
+        if (System.currentTimeMillis() > cb.getExpiringTime()) {
             return "{\"Error\":\"expired coupon.\"}";
         }
         switch (cb.getCouponType()) {
@@ -293,7 +326,7 @@ public class CouponCC extends ChaincodeBase {
      * @param uid uid
      * @param couponId 优惠券id
      */
-    private String markConsume(ChaincodeStub stub, CouponBatch cb, String uid , String couponId) {
+    private String markConsume(ChaincodeStub stub, CouponBatch cb, long uid , String couponId) {
         Coupon coupon = getCouponBySeriaNo(stub, couponId);
         if (coupon == null) {
             return "{\"Error\":\"illegal couponid.\"}";
@@ -371,7 +404,11 @@ public class CouponCC extends ChaincodeBase {
      */
     private void generateBatchNo(CouponBatch cb) {
         //TODO...待优化
-        cb.setSerialNo(String.valueOf(System.currentTimeMillis()));
+//        cb.setSerialNo(String.valueOf(System.currentTimeMillis()));
+    }
+
+    public CouponCC() {
+        super();
     }
 
     /**
@@ -394,11 +431,11 @@ public class CouponCC extends ChaincodeBase {
         }
         long curTimes = System.currentTimeMillis();
         //对于有领取起止时间限制的优惠券，需要做领取时间判断
-        if (curTimes < cb.getApplyStartDate() || curTimes > cb.getApplyEndDate()) {
+        if (curTimes < cb.getApplyStartTime() || curTimes > cb.getApplyEndTime()) {
             return false;
         }
         //有效期判断,不能领取过期的券
-        if (curTimes >= cb.getExpiringDate()) {
+        if (curTimes >= cb.getExpiringTime()) {
             return false;
         }
         //已经领取的优惠券数量不能大于批次限制的总量
@@ -419,7 +456,7 @@ public class CouponCC extends ChaincodeBase {
         }
         long curTimes = System.currentTimeMillis();
         //有效期判断,不能领取过期的券
-        if (curTimes >= cb.getExpiringDate()) {
+        if (curTimes >= cb.getExpiringTime()) {
             return false;
         }
         return true;
@@ -432,7 +469,7 @@ public class CouponCC extends ChaincodeBase {
      * @param cb  优惠券批次信息
      * @return  用户的领取行为是否合法
      */
-    private boolean checkUserLegality(ChaincodeStub stub, String uid, CouponBatch cb) {
+    private boolean checkUserLegality(ChaincodeStub stub, long uid, CouponBatch cb) {
         String cbNo = cb.getSerialNo();
         //用户拥有的优惠券，以"uid+批次no"为key, value是由以逗号分隔的优惠券no组成的字符串
         List<String> coupons = getCouponsOfUserBatch(stub, uid, cb.getSerialNo());
@@ -456,7 +493,7 @@ public class CouponCC extends ChaincodeBase {
      * @param uid  优惠券拥有者id
      * @param coupon  优惠券entity
      */
-    private void markOwned(ChaincodeStub stub, String uid, Coupon coupon) {
+    private void markOwned(ChaincodeStub stub, long uid, Coupon coupon) {
         coupon.setOwner(uid);
         saveCouponsOfUserBatch(stub, uid, coupon.getBatchSerialNo(), coupon.getSerialNo());
         saveCouponsOfUser(stub, uid, coupon.getSerialNo());
@@ -469,7 +506,7 @@ public class CouponCC extends ChaincodeBase {
      * @param uid
      * @param serialNo
      */
-    private void saveCouponsOfUser(ChaincodeStub stub, String uid, String serialNo) {
+    private void saveCouponsOfUser(ChaincodeStub stub, long uid, String serialNo) {
         String key = uid + COUPONS_OF_USER_KEY_SUFFIX;
         appendSplitableValue(stub, key, serialNo);
     }
@@ -480,7 +517,7 @@ public class CouponCC extends ChaincodeBase {
      * @param uid
      * @return
      */
-    private List<String> getCouponsOfUser(ChaincodeStub stub, String uid) {
+    private List<String> getCouponsOfUser(ChaincodeStub stub, long uid) {
         String key = uid + COUPONS_OF_USER_KEY_SUFFIX;
         return getSplitableValue(stub, key);
     }
@@ -492,7 +529,7 @@ public class CouponCC extends ChaincodeBase {
      * @param couponBatchNo 优惠券批次号
      * @return 优惠券序列号数组
      */
-    private List<String> getCouponsOfUserBatch(ChaincodeStub stub, String uid, String couponBatchNo) {
+    private List<String> getCouponsOfUserBatch(ChaincodeStub stub, long uid, String couponBatchNo) {
         String key = uid + couponBatchNo;
         return getSplitableValue(stub, key);
     }
@@ -555,7 +592,7 @@ public class CouponCC extends ChaincodeBase {
      * @param couponBatchNo 优惠券批次no
      * @param couponSerialNo 优惠券序列号
      */
-    private void saveCouponsOfUserBatch(ChaincodeStub stub, String uid, String couponBatchNo, String couponSerialNo) {
+    private void saveCouponsOfUserBatch(ChaincodeStub stub, long uid, String couponBatchNo, String couponSerialNo) {
         String key = uid + couponBatchNo;
         //用户在同一批次下的优惠券id用","分隔
         appendSplitableValue(stub, key, couponSerialNo);
